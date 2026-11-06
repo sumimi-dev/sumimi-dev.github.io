@@ -1,0 +1,52 @@
+# The documentation site.
+#
+# The site's source is `service/docs/` in **sumimi-dev/sumimi** — the very same
+# files the server binary serves at `/docs`. This workflow checks that
+# repository out and publishes the directory, so there is **one** source of truth
+# and two places to read it: the self-hosted `/docs` and the public site.
+#
+# The site is plain HTML with one stylesheet: no build step, no npm, nothing to
+# install. The pages are edited in the source repository, not here.
+name: The documentation site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every six hours, so a change in the source repository is published even
+    # when nobody pushes here.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Publish the site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # The source of the pages.
+      - name: The source
+        uses: actions/checkout@v4
+        with:
+          repository: sumimi-dev/sumimi
+          path: source
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: source/service/docs
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
