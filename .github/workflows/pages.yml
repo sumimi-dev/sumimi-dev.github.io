@@ -32,6 +32,9 @@ jobs:
     name: Publish the site
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       # The source of the pages.
       - name: The source
@@ -49,4 +52,5 @@ jobs:
           path: source/service/docs
 
       - name: Deploy
+        id: deployment
         uses: actions/deploy-pages@v4
